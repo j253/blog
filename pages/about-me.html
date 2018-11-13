@@ -9,15 +9,19 @@
 
         <title>About me</title>
 
+            <link href="https://j253.github.io/blog/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="J253 Blog Full Atom Feed" />
+            <link href="https://j253.github.io/blog/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="J253 Blog Full RSS Feed" />
         <!-- Bootstrap Core CSS -->
-        <link href="../theme/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://j253.github.io/blog/theme/css/bootstrap.min.css" rel="stylesheet">
 
         <!-- Custom CSS -->
-        <link href="../theme/css/clean-blog.min.css" rel="stylesheet">
+        <link href="https://j253.github.io/blog/theme/css/clean-blog.min.css" rel="stylesheet">
 
         <!-- Code highlight color scheme -->
-            <link href="../theme/css/code_blocks/monokai.css" rel="stylesheet">
+            <link href="https://j253.github.io/blog/theme/css/code_blocks/monokai.css" rel="stylesheet">
 
+            <!-- CSS specified by the user -->
+            <link href="https://j253.github.io/blog/my_css/custom.css" rel="stylesheet">
 
         <!-- Custom Fonts -->
         <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
@@ -48,14 +52,14 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="../">J253 Blog</a>
+                <a class="navbar-brand" href="https://j253.github.io/blog/">J253 Blog</a>
             </div>
 
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav navbar-right">
 
-                            <li class="active"><a href="../pages/about-me.html">About me</a></li>
+                            <li class="active"><a href="https://j253.github.io/blog/pages/about-me.html">About me</a></li>
                 </ul>
             </div>
             <!-- /.navbar-collapse -->
@@ -64,7 +68,7 @@
     </nav>
 
     <!-- Page Header -->
-        <header class="intro-header" style="background-image: url('..//images/lines_adrien_olichon_unsplash.jpg')">
+        <header class="intro-header" style="background-image: url('https://j253.github.io/blog//images/trees.jpg')">
         <div class="container">
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
@@ -82,10 +86,18 @@
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
     <article>
         <h1>My background</h1>
-<p>My background is in mechanical engineering and I spent the first few years of my career doing CFD, structural, and thermal analysis--mainly with COTS software like Ansys, NASTRAN, Abaqus, etc. I then spent a few years jumping around a few failed startups around California, did some design and analysis work for an electronics manufacturer, and eventually settled into a role at a company that sells time series signal processing and analysis software. I pretty much exclusively use Python these days for almost everything I do inside and outside of work.</p>
-<p>I currently hold one patent and have started a sold a successful company.</p>
+<p>My background is in mechanical engineering but I've been writing code for about 12 years now. Early on it was mainly C/C++ for numerical methods and number crunching stuff. I currently work for a company that develops and sells time series signal processing software. Now I pretty much exclusively use Python for everything I do inside and outside of work.</p>
+<p>I currently hold one patent and have co-founded and sold a successful company. You can contact me through email. My email address is as follows:</p>
+<div class="highlight"><pre><span></span><span class="n">base</span> <span class="o">=</span> <span class="s1">&#39;J&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="mi">100</span> <span class="o">+</span> <span class="mi">153</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.blog&#39;</span>
+<span class="n">host</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;gmail&#39;</span><span class="p">,</span> <span class="s1">&#39;com&#39;</span><span class="p">])</span>
+<span class="n">address</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="s1">&#39;@&#39;</span> <span class="o">+</span> <span class="n">host</span>
+</pre></div>
+
+
 <h1>This blog</h1>
-<p>Over the years I've built quite an extensive library of different and random projects...and they've sat idle on my computer ever since. I hope this blog, and GitHub more generally, provides me enough motivation to tidy them up, give 'em a nice write up, and put them in <a href="https://github.com/j253">my repository</a>.</p>
+<p>Over the years I've built quite an extensive personal library of different and random projects...and they've sat idle on my computer ever since. So I hope this blog, and GitHub more generally, provides me enough motivation to tidy them up, give 'em a nice write up, and put them in <a href="https://github.com/j253">my repository</a>.</p>
+<p>I also enjoy analyzing random data sets that I find interesting so I hope to have plenty of data exploration write ups as well. And my aim is to write them up as half show-and-tell and half Python tutorial and provide all the code in Jupyter notebooks.</p>
+<p>Enjoy!</p>
 <p>J253</p>
     </article>
             </div>
@@ -118,14 +130,32 @@
     </footer>
 
     <!-- jQuery -->
-    <script src="../theme/js/jquery.min.js"></script>
+    <script src="https://j253.github.io/blog/theme/js/jquery.min.js"></script>
 
     <!-- Bootstrap Core JavaScript -->
-    <script src="../theme/js/bootstrap.min.js"></script>
+    <script src="https://j253.github.io/blog/theme/js/bootstrap.min.js"></script>
 
         <!-- Custom Theme JavaScript -->
-        <script src="../theme/js/clean-blog.min.js"></script>
+        <script src="https://j253.github.io/blog/theme/js/clean-blog.min.js"></script>
 
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-128994196-1', 'auto');
+    ga('send', 'pageview');
+</script>
+<script type="text/javascript">
+    var disqus_shortname = 'J253blog';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
 </body>
 
 </html>

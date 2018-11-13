@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="english">
+
+<head>
+            <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+        <title>Fun with NFL Stats, Bokeh, and Pandas</title>
+
+            <link href="https://j253.github.io/blog/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="J253 Blog Full Atom Feed" />
+            <link href="https://j253.github.io/blog/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="J253 Blog Full RSS Feed" />
+            <link href="https://j253.github.io/blog/feeds/data-exploration.atom.xml" type="application/atom+xml" rel="alternate" title="J253 Blog Categories Atom Feed" />
+            <link href="https://j253.github.io/blog/feeds/data-exploration.rss.xml" type="application/rss+xml" rel="alternate" title="J253 Blog Categories RSS Feed" />
+        <!-- Bootstrap Core CSS -->
+        <link href="https://j253.github.io/blog/theme/css/bootstrap.min.css" rel="stylesheet">
+
+        <!-- Custom CSS -->
+        <link href="https://j253.github.io/blog/theme/css/clean-blog.min.css" rel="stylesheet">
+
+        <!-- Code highlight color scheme -->
+            <link href="https://j253.github.io/blog/theme/css/code_blocks/monokai.css" rel="stylesheet">
+
+            <!-- CSS specified by the user -->
+            <link href="https://j253.github.io/blog/my_css/custom.css" rel="stylesheet">
+
+        <!-- Custom Fonts -->
+        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+        <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+
+
+        <meta name="description" content="An exploration of NFL play-by-play statistics with Bokeh and Pandas.">
+
+        <meta name="author" content="J253">
+
+        <meta name="tags" content="python">
+        <meta name="tags" content="pandas">
+        <meta name="tags" content="bokeh">
+        <meta name="tags" content="stats">
+        <meta name="tags" content="csv">
+
+	                <meta property="og:locale" content="">
+		<meta property="og:site_name" content="J253 Blog">
+
+	<meta property="og:type" content="article">
+            <meta property="article:author" content="https://j253.github.io/blog/author/j253.html">
+	<meta property="og:url" content="https://j253.github.io/blog/fun-with-nfl-stats.html">
+	<meta property="og:title" content="Fun with NFL Stats, Bokeh, and Pandas">
+	<meta property="article:published_time" content="2018-11-11 17:31:00-08:00">
+            <meta property="og:description" content="An exploration of NFL play-by-play statistics with Bokeh and Pandas.">
+
+            <meta property="og:image" content="https://j253.github.io/blog/images/article_01/01_header.jpeg">
+</head>
+
+<body class="article-fun-with-nfl-stats">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="https://j253.github.io/blog/">J253 Blog</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+
+                            <li><a href="https://j253.github.io/blog/pages/about-me.html">About me</a></li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+    <!-- Page Header -->
+        <header class="intro-header" style="background-image: url('https://j253.github.io/blog//images/article_01/01_header.jpeg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Fun with NFL Stats, Bokeh, and Pandas</h1>
+                        <span class="meta">Posted by
+                                <a href="https://j253.github.io/blog/author/j253.html">J253</a>
+                             on Sun 11 November 2018
+                        </span>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+    <!-- Post Content -->
+    <article>
+        <h1>Background</h1>
+<p>Cruising through Kaggle last week, I found a CSV of NFL play-by-play statistics. I get particularly excited about sports data so I started digging into this one right away. The data I found was compiled by Maksim Horowitz, Ron Yurko, and Sam Ventura. I originally found the CSV posted on Maksim's <a href="https://www.kaggle.com/maxhorowitz/nflplaybyplay2009to2016/home">Kaggle page</a>.</p>
+<p>After reading a bit more I learned that they've created a really cool NFL API scraping tool called <a href="https://github.com/maksimhorowitz/nflscrapR">nflscrapR</a> (written in R) that not only scrapes, cleans, parses, and outputs the CSV, but they also built expected point and win probability models for the NFL and have included this information in the CSV. Thanks to them for the work and sharing the data!</p>
+<h1>Motivation</h1>
+<p>There are a million different things one could do with this data, and indeed the <a href="https://www.kaggle.com/maxhorowitz/nflplaybyplay2009to2016/discussion">people of Kaggle</a> have done many things - from data cleaning to play call prediction. My particular interest, and what I'm going to focus on in this write up, is what type of offensive play (pass, run, punt, or field goal) teams are running by down and by location on the field.</p>
+<p>In other words, we'll be able to answer questions like
+- What's the most common type of play called on the opponent's 20 yard line on any down?
+- What's the most common type of play called on the opponent's 20 yard line on first down?
+- Where on the field do most running plays starts when it's a third down?</p>
+<h1>The data...and some cleaning</h1>
+<p>The data is contained wholly within one large CSV. Sounds like a Pandas no-brainer to me. So let's first <code>import</code> Pandas and some other modules.</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">bokeh.plotting</span> <span class="kn">import</span> <span class="n">figure</span><span class="p">,</span> <span class="n">show</span>
+<span class="kn">from</span> <span class="nn">bokeh.models</span> <span class="kn">import</span> <span class="n">ColumnDataSource</span><span class="p">,</span> <span class="n">FactorRange</span><span class="p">,</span> <span class="n">FixedTicker</span>
+<span class="kn">from</span> <span class="nn">bokeh.io</span> <span class="kn">import</span> <span class="n">output_notebook</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+<span class="kn">from</span> <span class="nn">bokeh.transform</span> <span class="kn">import</span> <span class="n">factor_cmap</span>
+<span class="kn">from</span> <span class="nn">bokeh.palettes</span> <span class="kn">import</span> <span class="n">Paired</span><span class="p">,</span> <span class="n">Spectral</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.max_columns&#39;</span><span class="p">,</span> <span class="mi">150</span><span class="p">)</span>
+<span class="n">output_notebook</span><span class="p">()</span>
+</pre></div>
+
+
+<p>As you can seen I'm going to be using <a href="https://bokeh.pydata.org/en/latest/">Bokeh</a> for plotting, Counter from the <a href="https://docs.python.org/3.6/library/collections.html">collections module</a>, and <a href="https://docs.python.org/3/library/itertools.html">itertools</a> as well. As is also obvious, I originally did this in a Jupyter Notebook that I've made available in my repository <a href="https://github.com/j253">here</a>.</p>
+<p>Since they did a really nice job formatting the CSV, I can simply read the data into a dataframe without any other arguments.</p>
+<div class="highlight"><pre><span></span><span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;NFL Play by Play 2009-2017 (v4).csv&#39;</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+</pre></div>
+
+
+<p>A simple <code>df.shape</code> shows me that there are 407688 rows and 102 columns of data. Definitely something Pandas and Bokeh can handle. I trust that the data has been pretty well cleaned but I'm going to do my due diligence before I start calculating statistics on the data anyway.</p>
+<p>I'm mostly interested in aggregating data by down so let's check how much null data exists in the 'down' column. Running</p>
+<div class="highlight"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;down&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+</pre></div>
+
+
+<p>shows me that 61154 rows of the 'down' column contain non-numeric data. Presumably, these instances are kickoffs and extra points or something where there technically isn't a 'down'.</p>
+<blockquote>
+<p><strong>NOTE:</strong> I'm making the assumption that the 'clean' data I'm investigating has properly inserted NaN values in rows where the 'down' data is bad. If I couldn't make this guarantee I'd probably do something like <code>pd.to_numeric(df['down'], errors='coerce').isnull().sum()</code> to first try and convert everything in the column to a numerical value, inserting NaN where it can't, then count nulls and sum.</p>
+</blockquote>
+<p>So let's drop all those columns.</p>
+<div class="highlight"><pre><span></span><span class="c1"># filter by team if desired</span>
+<span class="n">team</span> <span class="o">=</span> <span class="s1">&#39;all&#39;</span>
+<span class="k">if</span> <span class="n">team</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+    <span class="n">team_df</span> <span class="o">=</span> <span class="n">df</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">team_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;posteam&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">team</span><span class="p">]</span>
+
+<span class="c1"># drop rows will null in the &#39;down&#39; column</span>
+<span class="n">team_df</span> <span class="o">=</span> <span class="n">team_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;down&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notnull</span><span class="p">()]</span>
+</pre></div>
+
+
+<blockquote>
+<p><strong>NOTE:</strong> I've also included the ability to filter the data down by team (column 'posteam') in case looking at the data by team is of any interest. For this post I'm going to use data from all teams.</p>
+</blockquote>
+<p>Now that I have the data I'm interested in, I'm going to count how many plays of each type there were as a final sanity check.</p>
+<div class="highlight"><pre><span></span><span class="n">all_play_types</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">team_df</span><span class="p">[</span><span class="s1">&#39;PlayType&#39;</span><span class="p">])</span>
+</pre></div>
+
+
+<blockquote>
+<p><strong>NOTE:</strong> For those who don't know, according to the Python docs, '<code>Counter</code> is a <code>dict</code> subclass for counting hashable objects'. In this case I'm passing it a Pandas Series (the 'PlayType' column) and it's counting all the different instances it finds in the column and returns a <code>Counter</code> type. It has a <code>dict</code> interface with each unique item found as the keys and the number of instances found as the values. For more info, see the <a href="https://docs.python.org/3.6/library/collections.html#collections.Counter">Python docs</a>.</p>
+</blockquote>
+<p>For easier reading I'll put the results in table form:</p>
+<table>
+<thead>
+<tr>
+<th align="center">Play Type</th>
+<th align="center">No. of Plays</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">Pass</td>
+<td align="center">158928</td>
+</tr>
+<tr>
+<td align="center">Run</td>
+<td align="center">120624</td>
+</tr>
+<tr>
+<td align="center">Punt</td>
+<td align="center">22003</td>
+</tr>
+<tr>
+<td align="center">Sack</td>
+<td align="center">10643</td>
+</tr>
+<tr>
+<td align="center">Field Goal</td>
+<td align="center">8927</td>
+</tr>
+<tr>
+<td align="center">No Play</td>
+<td align="center">21225</td>
+</tr>
+<tr>
+<td align="center">QB Kneel</td>
+<td align="center">3529</td>
+</tr>
+<tr>
+<td align="center">Spike</td>
+<td align="center">640</td>
+</tr>
+<tr>
+<td align="center">Timeout</td>
+<td align="center">12</td>
+</tr>
+<tr>
+<td align="center">Kickoff</td>
+<td align="center">2</td>
+</tr>
+<tr>
+<td align="center">Half End</td>
+<td align="center">1</td>
+</tr>
+</tbody>
+</table>
+<p>For the most part, nothing really surprising except that there are 2 instances of 'Kickoff' on plays that actually had a down assigned. This is unexpected. Unless there's some obscure rule in football I'm unaware of it'd probably require some further investigation but since this is just for fun, I'm going to ignore it.</p>
+<h1>On with the analysis</h1>
+<h2>Looking at play type by down</h2>
+<p>The first thing I want to do is a just a create a simple bar graph to see the breakdown of play type by down. I want to do this with a Bokeh vbar plot with nested categories. <a href="https://bokeh.pydata.org/en/latest/docs/user_guide/categorical.html#nested-categories">Here</a> is great resource for working with categorical data in Bokeh - specifically nested categories.</p>
+<p>If you're not familiar with Bokeh, most plots are driven by the <code>ColumnDataSource</code> which is a fundamental data structure of Bokeh. I'll leave the fine details of the <code>ColumnDataSource</code> for the reader to find <a href="https://bokeh.pydata.org/en/latest/docs/reference/models/sources.html#bokeh.models.sources.ColumnDataSource">here</a> in the Bokeh docs, and suffice it to say in this post that the code below is just getting the data ready for loading into the <code>ColumnDataSource</code> object.</p>
+<div class="highlight"><pre><span></span><span class="c1"># list of downs I care about</span>
+<span class="n">downs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;1&#39;</span><span class="p">,</span><span class="s1">&#39;2&#39;</span><span class="p">,</span><span class="s1">&#39;3&#39;</span><span class="p">,</span><span class="s1">&#39;4&#39;</span><span class="p">]</span>
+
+<span class="c1"># list of plays I care about</span>
+<span class="n">plays</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Pass&#39;</span><span class="p">,</span> <span class="s1">&#39;Run&#39;</span><span class="p">,</span> <span class="s1">&#39;Punt&#39;</span><span class="p">,</span> <span class="s1">&#39;Field Goal&#39;</span><span class="p">]</span>
+
+<span class="c1"># define x-axis categories to be used in the vbar plot</span>
+<span class="n">x</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">downs</span><span class="p">,</span> <span class="n">plays</span><span class="p">))</span>
+<span class="c1"># x = [(&#39;1&#39;, &#39;Pass&#39;), (&#39;1&#39;, &#39;Run&#39;), (&#39;1&#39;, &#39;Punt&#39;), ..., (&#39;4&#39;, &#39;Punt&#39;), (&#39;4&#39;, &#39;Field Goal&#39;)]</span>
+
+<span class="c1"># create a list of Counters for each down--will include ALL PlayTypes for each down</span>
+<span class="n">plays_on_down</span> <span class="o">=</span> <span class="p">[</span><span class="n">Counter</span><span class="p">(</span><span class="n">team_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">team_df</span><span class="p">[</span><span class="s1">&#39;down&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="n">down</span><span class="p">)][</span><span class="s1">&#39;PlayType&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">down</span> <span class="ow">in</span> <span class="n">downs</span><span class="p">]</span>
+
+<span class="c1"># create a list of counts for each play in plays for each down in downs</span>
+<span class="n">counts</span> <span class="o">=</span> <span class="p">[</span><span class="n">plays_on_down</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">down</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">play</span><span class="p">]</span> <span class="k">for</span> <span class="n">down</span><span class="p">,</span> <span class="n">play</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span>
+
+<span class="c1"># load the into the ColumnDataSource</span>
+<span class="n">source</span> <span class="o">=</span> <span class="n">ColumnDataSource</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">counts</span><span class="o">=</span><span class="n">counts</span><span class="p">))</span>
+</pre></div>
+
+
+<p>A little code goes a long way here. All I'm doing though is figuring out how many of each plays happened
+on each down and then packing that into a <code>ColumnDataSource</code>. Now I'm ready to start configuring my vbar plot.</p>
+<div class="highlight"><pre><span></span><span class="c1"># get the figure ready</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">figure</span><span class="p">(</span><span class="n">x_range</span><span class="o">=</span><span class="n">FactorRange</span><span class="p">(</span><span class="o">*</span><span class="n">x</span><span class="p">),</span> <span class="n">plot_height</span><span class="o">=</span><span class="mi">350</span><span class="p">,</span> <span class="n">plot_width</span><span class="o">=</span><span class="mi">750</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Play by Down&#39;</span><span class="p">,</span>
+           <span class="n">toolbar_location</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+<span class="c1"># create the vbar</span>
+<span class="n">p</span><span class="o">.</span><span class="n">vbar</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="s1">&#39;counts&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span> <span class="n">line_color</span><span class="o">=</span><span class="s1">&#39;white&#39;</span><span class="p">,</span>
+           <span class="n">fill_color</span><span class="o">=</span><span class="n">factor_cmap</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">palette</span><span class="o">=</span><span class="n">Spectral</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">factors</span><span class="o">=</span><span class="n">plays</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">p</span><span class="o">.</span><span class="n">y_range</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">p</span><span class="o">.</span><span class="n">x_range</span><span class="o">.</span><span class="n">range_padding</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="n">p</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">major_label_orientation</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">p</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">axis_label</span> <span class="o">=</span> <span class="s1">&#39;Down&#39;</span>
+<span class="n">p</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">axis_label</span> <span class="o">=</span> <span class="s1">&#39;Number of Plays&#39;</span>
+<span class="n">p</span><span class="o">.</span><span class="n">xgrid</span><span class="o">.</span><span class="n">grid_line_color</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="n">show</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+</pre></div>
+
+
+<p>All the hard work here is done by the <code>FactorRange</code> method, which is a nice touch from the Bokeh folks. It automatically figures out the offset and width each bar needs in each category taking into account the number of levels and padding. It's far less work than <a href="https://stackoverflow.com/questions/14270391/python-matplotlib-multiple-bars">manually doing it with matplotlib</a>. The <code>factor_cmap</code> distributes my colors to each nested vbar in each level - another very handy method for working with nested vbar plots. Here's the result:</p>
+<p><img alt="Type of play by down" src="https://j253.github.io/blog/images/article_01/01_play_by_down.png"></p>
+<p>So nothing too surprising here but there are a few things worth nothing.</p>
+<ul>
+<li>Teams elect to run on first down by a slight majority.</li>
+<li>Not many teams elect to punt or attempt a field goal on downs 1-3. That's good, I guess.</li>
+<li>Passing becomes more and more popular as you use up your downs.</li>
+<li>On third down, pass attempts outnumber run attempts at almost a 4 to 1 clip. This is likely out of increased desperation to make a first down.</li>
+</ul>
+<p>That last point makes me wonder at what point teams elect to run on third down. What's the break point in yards to go where passes become more popular than runs? Let's find out!</p>
+<h2>Looking at play type on third down as a function of yards to go for a first down</h2>
+<p>Let's first collect the data I need.</p>
+<div class="highlight"><pre><span></span><span class="c1"># define range of yards to go I want to look at</span>
+<span class="n">y2g</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">25</span><span class="p">)</span>
+
+<span class="c1"># filter down the total team_df to just third downs</span>
+<span class="n">team_df_d3</span> <span class="o">=</span> <span class="n">team_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">team_df</span><span class="p">[</span><span class="s1">&#39;down&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">]</span>
+
+<span class="c1"># create list of Counters of PlayType for each yard in my rage of interest</span>
+<span class="n">plays_on_d3</span> <span class="o">=</span> <span class="p">[</span><span class="n">Counter</span><span class="p">(</span><span class="n">team_df_d3</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">team_df_d3</span><span class="p">[</span><span class="s1">&#39;ydstogo&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">yrd</span><span class="p">][</span><span class="s1">&#39;PlayType&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">yrd</span> <span class="ow">in</span> <span class="n">y2g</span><span class="p">]</span>
+
+<span class="c1"># x-axis is y2g, defined above</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">y2g</span>
+
+<span class="c1"># extract the run count for each yard</span>
+<span class="n">y_runs</span> <span class="o">=</span> <span class="p">[</span><span class="n">play</span><span class="p">[</span><span class="s1">&#39;Run&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">play</span> <span class="ow">in</span> <span class="n">plays_on_d3</span><span class="p">]</span>
+
+<span class="c1"># extract the pass count for each yard</span>
+<span class="n">y_pass</span> <span class="o">=</span> <span class="p">[</span><span class="n">play</span><span class="p">[</span><span class="s1">&#39;Pass&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">play</span> <span class="ow">in</span> <span class="n">plays_on_d3</span><span class="p">]</span>
+
+<span class="c1"># get the figure ready and put my lines on it</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">figure</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;Third Down Play Type by Yard to Go&#39;</span><span class="p">,</span> <span class="n">toolbar_location</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+           <span class="n">plot_height</span><span class="o">=</span><span class="mi">350</span><span class="p">,</span> <span class="n">plot_width</span><span class="o">=</span><span class="mi">750</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y_pass</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#2b83ba&#39;</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="s1">&#39;Pass&#39;</span><span class="p">,</span> <span class="n">line_width</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y_runs</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#abdda4&#39;</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="s1">&#39;Run&#39;</span><span class="p">,</span> <span class="n">line_width</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">legend</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="s1">&#39;top_left&#39;</span>
+<span class="n">show</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="Type of play on third down by yard to go" src="https://j253.github.io/blog/images/article_01/02_third_down_play_by_type.png"></p>
+<p>Let's first explain away the spikes. The huge spike at 10 yards is most likely from two previous unsuccessful attempts to move the ball forward, which is quite common. I believe the story is similar for the spikes at 15 and 20 yards with a penalty or two moving them back.</p>
+<p>This rest of this chart might be easier to interpret by taking looking at the ratio of passes/run by yards to go.</p>
+<div class="highlight"><pre><span></span><span class="c1"># simple ratio of pass count/run count for each yard</span>
+<span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="n">play</span><span class="p">[</span><span class="s1">&#39;Pass&#39;</span><span class="p">]</span><span class="o">/</span><span class="n">play</span><span class="p">[</span><span class="s1">&#39;Run&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">play</span> <span class="ow">in</span> <span class="n">plays_on_d3</span><span class="p">]</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">figure</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;Third Down Pass/Run Ratio by Yards to Go&#39;</span><span class="p">,</span> <span class="n">toolbar_location</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+           <span class="n">plot_height</span><span class="o">=</span><span class="mi">350</span><span class="p">,</span> <span class="n">plot_width</span><span class="o">=</span><span class="mi">750</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#2b83ba&#39;</span><span class="p">,</span> <span class="n">line_width</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">axis_label</span> <span class="o">=</span> <span class="s1">&#39;Yards to Go&#39;</span>
+<span class="n">p</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">axis_label</span> <span class="o">=</span> <span class="s1">&#39;Pass/Run Ratio&#39;</span>
+</pre></div>
+
+
+<p><img alt="Third down pass to run ratio by yards to go" src="https://j253.github.io/blog/images/article_01/04_third_down_pass_run_ratio_by_yard.png"></p>
+<p>So it looks like the breakpoint is just under two yards to go. With one yard to go, runs outnumber passes nearly 3 to 1. Beyond two yards, passes are significantly more popular than runs. To be honest this surprised me a bit. I definitely expected more passes on third down, but this ratio jumps up fast! Even at just three yards to go, we see passes outnumbering runs at over 4 to 1 and nearly 8 to 1 at as little as 6 yards to go. Guess teams are desperate for that first down!</p>
+<p>I'm not going to do it here but it'd be interesting to see what the average yardage gain is on third down runs.</p>
+<h2>Looking at plays by position on the field</h2>
+<p>Now I want to look at what kind of play is being run as a function of offensive position on the field. So first I'll collect the data I need.</p>
+<div class="highlight"><pre><span></span><span class="c1"># define range of yard lines I&#39;m interested in.</span>
+<span class="n">yrdline</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">101</span><span class="p">)</span>
+
+<span class="c1"># create list of Counters for every yard line on the field.</span>
+<span class="n">plays_on_yrd</span> <span class="o">=</span> <span class="p">[</span><span class="n">Counter</span><span class="p">(</span><span class="n">team_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">team_df</span><span class="p">[</span><span class="s1">&#39;yrdline100&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">yrd</span><span class="p">][</span><span class="s1">&#39;PlayType&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">yrd</span> <span class="ow">in</span> <span class="n">yrdline</span><span class="p">]</span>
+</pre></div>
+
+
+<p>This is similar to what I did earlier. I'm just collecting a list of <code>Counters</code> for each 'PlayType' at each yard line on the field. Let's plot it.</p>
+<div class="highlight"><pre><span></span><span class="c1"># extract counts of each PlayType I&#39;m interested in for each yard</span>
+<span class="n">y_pass</span> <span class="o">=</span> <span class="p">[</span><span class="n">play</span><span class="p">[</span><span class="s1">&#39;Pass&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">play</span> <span class="ow">in</span> <span class="n">plays_on_yrd</span><span class="p">]</span>
+<span class="n">y_runs</span> <span class="o">=</span> <span class="p">[</span><span class="n">play</span><span class="p">[</span><span class="s1">&#39;Run&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">play</span> <span class="ow">in</span> <span class="n">plays_on_yrd</span><span class="p">]</span>
+<span class="n">y_punt</span> <span class="o">=</span> <span class="p">[</span><span class="n">play</span><span class="p">[</span><span class="s1">&#39;Punt&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">play</span> <span class="ow">in</span> <span class="n">plays_on_yrd</span><span class="p">]</span>
+<span class="n">y_fg</span> <span class="o">=</span> <span class="p">[</span><span class="n">play</span><span class="p">[</span><span class="s1">&#39;Field Goal&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">play</span> <span class="ow">in</span> <span class="n">plays_on_yrd</span><span class="p">]</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">figure</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;Plays by Yard Line&#39;</span><span class="p">,</span> <span class="n">toolbar_location</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+           <span class="n">plot_height</span><span class="o">=</span><span class="mi">350</span><span class="p">,</span> <span class="n">plot_width</span><span class="o">=</span><span class="mi">750</span><span class="p">,</span> <span class="n">x_range</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">99</span><span class="p">))</span>
+<span class="n">p</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y_pass</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#2b83ba&#39;</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="s1">&#39;Pass&#39;</span><span class="p">,</span> <span class="n">line_width</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y_runs</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#abdda4&#39;</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="s1">&#39;Run&#39;</span><span class="p">,</span> <span class="n">line_width</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y_punt</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#fdae61&#39;</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="s1">&#39;Punt&#39;</span><span class="p">,</span> <span class="n">line_width</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y_fg</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;#d7191c&#39;</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="s1">&#39;Field Goal&#39;</span><span class="p">,</span> <span class="n">line_width</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">legend</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="s1">&#39;top_right&#39;</span>
+<span class="n">p</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">axis_label</span> <span class="o">=</span> <span class="s1">&#39;Yard Line (100 is team</span><span class="se">\&#39;</span><span class="s1">s own goal line)&#39;</span>
+<span class="n">p</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">axis_label</span> <span class="o">=</span> <span class="s1">&#39;Number of Plays&#39;</span>
+<span class="n">p</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">ticker</span> <span class="o">=</span> <span class="n">FixedTicker</span><span class="p">(</span><span class="n">ticks</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">5</span><span class="p">)))</span>
+<span class="n">show</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="Total play counts by yard line" src="https://j253.github.io/blog/images/article_01/05_total_plays_by_yard_line.png"></p>
+<p>You can think of this plot as a football field where the offense is always going from right to left. So the 100 yard line is the offense's own goal line and the 0 yard line is the end zone the offense is trying to reach.</p>
+<p>Again we see some spikes at the offense's own 20 and 25 yard lines (80 and 75, respectively, on the chart). This is because most plays start at these locations after a touch back from a kick off. The small spikes at 5 yard increments is interesting and I don't really have a good explanation other than to think that whoever recorded the yardage data liked rounding to the nearest 5 if it was close. Anyone else have any other ideas?</p>
+<p>We're looking at total plays here, so it's easy to see that passes are favored over runs for pretty much the entire length of the field. The exceptions being very close to either end zone. Not surprising since when you're close to your own end zone, you don't want have the QB drop back and risk a safety. And not surprising at the other end of the field either. A little brute force with a draw play or QB sneak within a yard or two of the end zone is quite common.</p>
+<h2>Normalized by number of plays at each yard line</h2>
+<p>I'd like to look at this same data but normalize it by the total number of plays at each yard line. In other words, I want to see what fraction of plays were passes, runs, punts, and field goals at each yard line.</p>
+<p>I pretty much have all the code I need to get there. I just need to add a function to sum up the total number of plays that I'm counting at each yard line. I'm not going to put the code here since it's very similar to the above but you can find it in the notebook.</p>
+<p><img alt="Total play counts by yard line normalized by yard line" src="https://j253.github.io/blog/images/article_01/06_total_plays_by_yrd_normalized_by_yrd.png"></p>
+<p>Ok, so same data but a little easier to read. In this plot the break point between punts and fields becomes obvious - somewhere around the 36-37 yard line. It's also interesting to note that it appears that as field goals begin to take a fraction of the overall play count, it's the passing plays that makes the room for it and runs stay pretty much steady. I would venture to guess that it's conservatism by the offensive play caller that causes this. They know they're in field goal range and can all but guarantee 3 points if they can keep possession. No sense in risking the interception.</p>
+<p>I'm curious how this varies by down so let's find out!</p>
+<h3>First down</h3>
+<p>For the interested readers, you can find the code in the notebook. It's exactly the same code, but I'm filtering to dataframe to just plays on down one. Here's the resulting plot.</p>
+<p><img alt="Total play counts by yard line normalized by yard line on first down" src="https://j253.github.io/blog/images/article_01/07_total_plays_by_yrd_normalized_by_yrd_d1.png"></p>
+<p>Between the offense's own 20 yard line and the defense's 35 yard line it's pretty evenly split between passes and runs. When backed up against their own end zone, the offense overwhelmingly elects to run. Within the defense's 35 yard line, run plays become more and more common. Again, conservative play calling to keep possession is likely the cause here. You can see a trickling of field goals on first down, most likely at the end of the half of the end of the game.</p>
+<h3>Second down</h3>
+<p><img alt="Total play counts by yard line normalized by yard line on second down" src="https://j253.github.io/blog/images/article_01/08_total_plays_by_yrd_normalized_by_yrd_d2.png"></p>
+<p>Interesting. Passes are consistently chosen more often on second down regardless of field position. The exception being within a few yards of the end zone. Makes sense.</p>
+<h3>Third down</h3>
+<p><img alt="Total play counts by yard line normalized by yard line on third down" src="https://j253.github.io/blog/images/article_01/09_total_plays_by_yrd_normalized_by_yrd_d3.png"></p>
+<p>Wow! Passes are overwhelmingly favored on third down from anywhere on the field except the 1 yard line. I'd guess the spikes at the offense's own 29 yard line and 34 yard line are run efforts made with one yard to go on the first possession after a touch back.</p>
+<h3>Fourth down</h3>
+<p><img alt="Total play counts by yard line normalized by yard line on fourth down" src="https://j253.github.io/blog/images/article_01/10_total_plays_by_yrd_normalized_by_yrd_d4.png"></p>
+<p>No surprise that punts are almost guaranteed on fourth down beyond the 45 yard line and field goals are overwhelmingly chosen within the 30 yard line. Between the 30 and 45 appears to be an area of indecision. I'm sure it depends a lot on the game situation but, comparatively, there's a fairly even split between all four play types in that range. Another point to note is that on the 1 yard line, even on fourth down, teams really want that touchdown.</p>
+<h2>Normalized by the total count of a given type of play</h2>
+<p>Now instead of normalizing by the total number of plays at a given yard line, I'm going to normalize each play type at each yard line by that play type across the entire field. In other words, the fraction on the y axis will be relative to each play type across the entire field. So the sum of values that make up each line will sum to 1. Doing this will allow me to see, for example, of all pass plays across the the entire length of the field, what fraction of them occurred at a given yard line.</p>
+<p>Let's take a look. Again, the code will be in the notebook. The only difference here is that I need a function to sum up the total number of plays of a given play type across the entire field.</p>
+<p><img alt="Total play counts by yard line normalized by play type" src="https://j253.github.io/blog/images/article_01/11_total_plays_by_yrd_normalized_by_play.png">
+So remember, the fractions represent fractions of a given type. So looking at the runs, for example, I can see that nearly 5% of all run plays start at the 20 yard line. Same story for the passes and again this is because of how often plays start here from touch backs. It it worthy to note that since the majority of plays start here, you can see a lot of action between the 20 and 30 yard lines and it decreases and you move up the field. This is expected since continuing that far down the field requires several first down conversions.</p>
+<p>It's interesting to note that most punts occur at the 29 yard line. Likely because of unsuccessful first down conversions after a touch back. Most field goals occur at the 30 yard line. Seems arbitrary and I'm not entirely sure why.</p>
+<p>Let's see how this varies by down.</p>
+<h3>First down</h3>
+<p><img alt="Total play counts by yard line normalized by play type on first down" src="https://j253.github.io/blog/images/article_01/12_total_plays_by_yrd_normalized_by_play_d1.png"></p>
+<p>Aside from the single punt that happened on first down from the team's own 11 yard line, I don't see anything too surprising here. The slope of the pass line appears a little steeper than the run line. This indicates that the distribution of runs is skewed slightly more towards first down plays in good offensive position and the distribution of passes is skewed slightly more towards first down plays in poor field position in their own territory.</p>
+<h3>Second down</h3>
+<p><img alt="Total play counts by yard line normalized by play type on first down" src="https://j253.github.io/blog/images/article_01/13_total_plays_by_yrd_normalized_by_play_d2.png"></p>
+<p>The distribution of passes and runs is shared pretty evenly along the entire field.</p>
+<h3>Third down</h3>
+<p><img alt="Total play counts by yard line normalized by play type on first down" src="https://j253.github.io/blog/images/article_01/14_total_plays_by_yrd_normalized_by_play_d3.png"></p>
+<p>On third down, not surprisingly, passes are distributed more heavily towards plays in poor field position in a team's own territory. They're desperate for that first down. There were four punts on third down and two of them occurred within field goal range. I wonder what game situation forced that to happen. The data is all there in the CSV, but I'll leave that exercise up to the ambitious reader.</p>
+<h3>Fourth down</h3>
+<p><img alt="Total play counts by yard line normalized by play type on first down" src="https://j253.github.io/blog/images/article_01/15_total_plays_by_yrd_normalized_by_play_d4.png"></p>
+<p>Like second down, there's a pretty similar distribution among passes and runs across the entire field which indicates that if the team doesn't punt or attempt a field goal, the pass/run ratio across the entire field is pretty much 1 to 1.</p>
+<p>It's also interesting to see that the vast majority of fourth down runs start on the one yard line - almost 9% of all fourth down runs! I'd guess the increased number of plays, generally, at the one yard line is due to pass interference in the end zone. I'm curious what the touchdown conversion rate is for runs from the 1 yard line. Again, all the data's here, but I'm not going to dig on that one either.</p>
+<h2>Summary</h2>
+<p>In this post, I explored some NFL play-by-play data. You can find the data <a href="https://www.kaggle.com/maxhorowitz/nflplaybyplay2009to2016/home">here</a>. Since the data was already in such good condition, I didn't really have to do any cleaning. It was more of an exercise in Pandas slicing and filtering and plotting in Bokeh. In doing so, I tried to expose some interesting patterns in play type as a function of down and field location and I normalized the data both by the total numbers of plays at each yard line and also by the total number of plays of a given type across the entire field.</p>
+<p>Hopefully you learned something! Please leave comments, questions, or found errors below. Thanks.</p>
+<p>J253</p>
+    </article>
+
+        <div class="tags">
+            <p>tags: <a href="https://j253.github.io/blog/tag/python.html">python</a>, <a href="https://j253.github.io/blog/tag/pandas.html">pandas</a>, <a href="https://j253.github.io/blog/tag/bokeh.html">bokeh</a>, <a href="https://j253.github.io/blog/tag/stats.html">stats</a>, <a href="https://j253.github.io/blog/tag/csv.html">csv</a></p>
+        </div>
+
+    <hr>
+<!-- Added JAS 11/1 -->
+<!-- Added JAS 11/1 -->
+
+        <div class="comments">
+            <h2>Comments !</h2>
+            <div id="disqus_thread"></div>
+            <script type="text/javascript">
+                var disqus_shortname = 'J253blog';
+                var disqus_identifier = 'fun-with-nfl-stats.html';
+                var disqus_url = 'https://j253.github.io/blog/fun-with-nfl-stats.html';
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//J253blog.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            </script>
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                            <li>
+                                <a href="http://github.com/j253">
+                                    <span class="fa-stack fa-lg">
+                                        <i class="fa fa-circle fa-stack-2x"></i>
+                                        <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                    </span>
+                                </a>
+                            </li>
+                    </ul>
+<p class="copyright text-muted">
+    Blog powered by <a href="http://getpelican.com">Pelican</a>,
+    which takes great advantage of <a href="http://python.org">Python</a>. <br />        &copy;  J253
+</p>                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="https://j253.github.io/blog/theme/js/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="https://j253.github.io/blog/theme/js/bootstrap.min.js"></script>
+
+        <!-- Custom Theme JavaScript -->
+        <script src="https://j253.github.io/blog/theme/js/clean-blog.min.js"></script>
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-128994196-1', 'auto');
+    ga('send', 'pageview');
+</script>
+<script type="text/javascript">
+    var disqus_shortname = 'J253blog';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+</body>
+
+</html>
